@@ -27,6 +27,7 @@ var keywords = []string{
 
 var regexBlankLine = regexp.MustCompile(`^\s*$`)
 var regexCommentLine = regexp.MustCompile(`^\s*#.*$`)
+var regexJoinLine = regexp.MustCompile(`^.*\\$`)
 var regexWhitespace = regexp.MustCompile(`\s`)
 var regexStartIdent = regexp.MustCompile(`[a-zA-Z_]`)
 var regexContIdent = regexp.MustCompile(`[a-zA-Z0-9_]`)
@@ -38,6 +39,7 @@ type Tokenizer struct {
 	lineText    string
 	indentStack []int
 	joinLines   bool
+	embedLvl    int
 	Tokens      chan TokenLit
 }
 
@@ -148,7 +150,33 @@ func (t *Tokenizer) tokenOther() {
 		t.unread()
 		return
 	}
-	t.Tokens <- TokenLit{ILLEGAL, string(char)}
+
+	switch char {
+	case '(':
+		t.Tokens <- TokenLit{Token: PARENLEFT}
+		t.embedLvl++
+	case ')':
+		t.Tokens <- TokenLit{Token: PARENRIGHT}
+		t.embedLvl--
+	case '[':
+		t.Tokens <- TokenLit{Token: BRACKETLEFT}
+		t.embedLvl++
+	case ']':
+		t.Tokens <- TokenLit{Token: BRACKETRIGHT}
+		t.embedLvl--
+	case '{':
+		t.Tokens <- TokenLit{Token: BRACELEFT}
+		t.embedLvl++
+	case '}':
+		t.Tokens <- TokenLit{Token: BRACERIGHT}
+		t.embedLvl--
+	case '\\':
+		if !regexJoinLine.MatchString(t.lineText) {
+			t.Tokens <- TokenLit{ILLEGAL, string(char)}
+		}
+	default:
+		t.Tokens <- TokenLit{ILLEGAL, string(char)}
+	}
 }
 
 func (t *Tokenizer) tokenizeLine() {
@@ -173,7 +201,20 @@ func (t *Tokenizer) tokenizeLine() {
 			t.tokenOther()
 		}
 	}
-	t.Tokens <- TokenLit{NEWLINE, ""}
+
+	// Check if need to join lines
+	if regexJoinLine.MatchString(t.lineText) || t.embedLvl > 0 {
+		t.joinLines = true
+	} else if t.embedLvl < 0 {
+		t.embedLvl = 0
+		t.joinLines = false
+	} else if t.joinLines {
+		t.joinLines = false
+	}
+
+	if !t.joinLines {
+		t.Tokens <- TokenLit{Token: NEWLINE}
+	}
 }
 
 func (t *Tokenizer) Tokenize() {
@@ -182,5 +223,5 @@ func (t *Tokenizer) Tokenize() {
 		t.line.Reset(t.lineText)
 		t.tokenizeLine()
 	}
-	t.Tokens <- TokenLit{EOF, ""}
+	t.Tokens <- TokenLit{Token: EOF}
 }
