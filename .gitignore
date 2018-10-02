@@ -1,3 +1,7 @@
+### Project specific
+# Generated code
+tokenizer/tokenvalue_string.go
+
 ### Go template
 # Binaries for programs and plugins
 *.exe
