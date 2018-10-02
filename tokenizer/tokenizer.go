@@ -119,7 +119,12 @@ func (t *Tokenizer) tokenIdentifier() {
 	}
 
 	// Send TokenLit to channel
-	t.Tokens <- TokenLit{IDENTIFIER, buf.String()}
+	str := buf.String()
+	if checkKeyword(str) {
+		t.Tokens <- TokenLit{KEYWORD, str}
+	} else {
+		t.Tokens <- TokenLit{IDENTIFIER, buf.String()}
+	}
 }
 
 func (t *Tokenizer) tokenNumber() {
