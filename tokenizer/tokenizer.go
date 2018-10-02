@@ -3,7 +3,6 @@ package tokenizer
 import (
 	"bufio"
 	"bytes"
-	"fmt"
 	"os"
 	"regexp"
 	"strings"
@@ -99,7 +98,6 @@ func (t *Tokenizer) tokenIdentifier() {
 	// otherwise unread & return
 	char, err = t.read()
 	if err != nil || !regexStartIdent.MatchString(string(char)) {
-		fmt.Printf("err, match: %v, %v", err, !regexStartIdent.MatchString(string(char)))
 		t.unread()
 		return
 	}
