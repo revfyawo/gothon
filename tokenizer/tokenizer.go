@@ -86,7 +86,35 @@ func (t *Tokenizer) tokenWhitespace() {
 }
 
 func (t *Tokenizer) tokenIndentation() {
-	return
+	var char rune
+	var err error
+	var indent int
+
+	for {
+		char, err = t.read()
+		if err != nil {
+			break
+		} else if !regexWhitespace.MatchString(string(char)) {
+			t.unread()
+			break
+		} else if char == ' ' {
+			indent++
+		} else if char == '\t' {
+			indent += 8 - indent%8
+		}
+	}
+
+	var topStack = t.indentStack[len(t.indentStack)-1]
+	if indent > topStack {
+		t.indentStack = append(t.indentStack, indent)
+		t.Tokens <- TokenLit{Token: INDENT}
+	} else if indent < topStack {
+		for indent < topStack {
+			t.indentStack = t.indentStack[:len(t.indentStack)-1]
+			topStack = t.indentStack[len(t.indentStack)-1]
+			t.Tokens <- TokenLit{Token: DEINDENT}
+		}
+	}
 }
 
 func (t *Tokenizer) tokenIdentifier() {
@@ -186,6 +214,10 @@ func (t *Tokenizer) tokenizeLine() {
 	if regexBlankLine.MatchString(t.lineText) || regexCommentLine.MatchString(t.lineText) {
 		// Ignore blank lines and comment lines
 		return
+	}
+
+	if !t.joinLines {
+		t.tokenIndentation()
 	}
 
 	var char, err = t.readUnread()
