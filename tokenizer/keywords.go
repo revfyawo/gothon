@@ -1,20 +1,39 @@
 package tokenizer
 
-var keywords = []string{
-	"False", "await", "else", "import", "pass",
-	"None", "break", "except", "in", "raise",
-	"True", "class", "finally", "is", "return",
-	"and", "continue", "for", "lambda", "try",
-	"as", "def", "from", "nonlocal", "while",
-	"assert", "del", "global", "not", "with",
-	"async", "elif", "if", "or", "yield",
-}
-
-func checkKeyword(literal string) bool {
-	for _, kw := range keywords {
-		if literal == kw {
-			return true
-		}
-	}
-	return false
+var keywords = map[string]TokenValue{
+	"False":    FALSE,
+	"None":     NONE,
+	"True":     TRUE,
+	"and":      AND,
+	"as":       AS,
+	"assert":   ASSERT,
+	"async":    ASYNC,
+	"await":    AWAIT,
+	"break":    BREAK,
+	"class":    CLASS,
+	"continue": CONTINUE,
+	"def":      DEF,
+	"del":      DEL,
+	"elif":     ELIF,
+	"else":     ELSE,
+	"except":   EXCEPT,
+	"finally":  FINALLY,
+	"for":      FOR,
+	"from":     FROM,
+	"global":   GLOBAL,
+	"if":       IF,
+	"import":   IMPORT,
+	"in":       IN,
+	"is":       IS,
+	"lambda":   LAMBDA,
+	"nonlocal": NONLOCAL,
+	"not":      NOT,
+	"or":       OR,
+	"pass":     PASS,
+	"raise":    RAISE,
+	"return":   RETURN,
+	"try":      TRY,
+	"while":    WHILE,
+	"with":     WITH,
+	"yield":    YIELD,
 }

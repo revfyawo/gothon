@@ -135,11 +135,12 @@ func (t *Tokenizer) tokenIdentifier() {
 	}
 
 	// Send TokenLit to channel
-	str := buf.String()
-	if checkKeyword(str) {
-		t.Tokens <- TokenLit{KEYWORD, str}
+	var literal = buf.String()
+	var token, ok = keywords[literal]
+	if ok {
+		t.Tokens <- TokenLit{Token: token}
 	} else {
-		t.Tokens <- TokenLit{IDENTIFIER, buf.String()}
+		t.Tokens <- TokenLit{IDENTIFIER, literal}
 	}
 }
 
