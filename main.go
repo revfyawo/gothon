@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
+	"github.com/revfyawo/gothon/tokenizer"
 	"os"
-	"revfyawo/gothon/tokenizer"
 )
 
 func main() {
